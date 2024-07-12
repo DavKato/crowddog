@@ -1,6 +1,6 @@
 <script>
-	import { goto } from '$app/navigation';
-	import { store } from '$lib';
-
-	if (!store.user) goto('/login', { replaceState: true });
 </script>
+
+<h1>PAGE</h1>
+
+<a href="/login" style="display: block; margin-top: 1rem; text-decoration: underline;">LOGIN</a>

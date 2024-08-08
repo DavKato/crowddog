@@ -1,25 +1,30 @@
 <script>
     import { goto } from '$app/navigation';
-    import { saveAuth } from '$lib/io';
-    import EyeIcon from '$lib/icons/Eye.svelte';
+    import { fade } from 'svelte/transition';
+    import { setAuth } from '$lib/io';
+    import Eye from '$lib/icons/Eye.svelte';
+    import Loader from '$lib/icons/Loader.svelte';
 
+    let loading = $state(false);
     let email = $state('');
     let passwd = $state('');
     let showPasswd = $state(false);
     let isFilled = $derived(email && passwd);
 
     async function submit() {
+        loading = true;
         const user = { email, passwd };
         try {
-            await saveAuth(user);
+            await setAuth(user);
             goto('/');
         } catch (err) {
             console.log(err);
+            loading = false;
         }
     }
 </script>
 
-<fieldset>
+<fieldset inert={loading}>
     <legend>CrowdLogの認証情報を<wbr />入力してください。</legend>
     <label>
         <span>EMAIL</span>
@@ -28,10 +33,14 @@
     <label style="position: relative">
         <span>PASSWORD</span>
         <input type={showPasswd ? 'text' : 'password'} bind:value={passwd} />
-        <EyeIcon class="pw-icon" hidden={!showPasswd} onclick={() => (showPasswd = !showPasswd)} />
+        <Eye class="pw-icon" hidden={!showPasswd} onclick={() => (showPasswd = !showPasswd)} />
     </label>
     <button disabled={!isFilled} onclick={submit}>OK</button>
 </fieldset>
+
+{#if loading}
+    <div class="cover"><Loader></Loader></div>
+{/if}
 
 <style>
     fieldset {
@@ -113,5 +122,19 @@
         box-shadow:
             1px 1px 1px var(--color-shadow),
             inset 1px 1px 1px var(--color-shadow);
+    }
+
+    .cover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--color-text);
     }
 </style>

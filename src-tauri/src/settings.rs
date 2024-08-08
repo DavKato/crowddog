@@ -32,9 +32,9 @@ impl Auth {
         }
     }
 
-    pub fn replace(&mut self, new_settings: Auth) {
-        self.email = new_settings.email;
-        self.passwd = new_settings.passwd;
+    pub fn replace(&mut self, new_settings: &Auth) {
+        self.email = new_settings.email.clone();
+        self.passwd = new_settings.passwd.clone();
     }
 
     pub fn save(&self, app: &tauri::AppHandle) {

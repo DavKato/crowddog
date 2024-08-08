@@ -5,6 +5,7 @@ use std::sync::Mutex;
 
 use tauri::Manager;
 
+mod api;
 mod command;
 mod settings;
 
@@ -24,9 +25,10 @@ fn main() {
             }
 
             app.manage(Mutex::new(auth));
+            app.manage(api::ApiClient::new());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![command::save_auth])
+        .invoke_handler(tauri::generate_handler![command::login])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

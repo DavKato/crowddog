@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
-export const saveAuth = (user: User) => {
-    return invoke('save_auth', { newAuth: user });
+export const setAuth = (user: User) => {
+    return invoke('login', { newAuth: user });
 }

@@ -1,8 +1,17 @@
 const BASE_PATH: &str = "https://app.crowdlog.jp";
 
-use reqwest::multipart;
+use reqwest::{multipart, StatusCode};
 
 use crate::settings::Auth;
+
+// custom error type
+#[derive(Debug)]
+pub struct ReqError {
+    pub msg: String,
+    pub status: Option<StatusCode>,
+    pub url: Option<String>,
+    pub res: Option<reqwest::Response>,
+}
 
 pub struct ApiClient {
     client: reqwest::Client,
@@ -16,8 +25,12 @@ impl ApiClient {
         Self { client }
     }
 
-    pub async fn login(&self, auth: &Auth) -> Result<(), String> {
-        let url = format!("{}/login.cgi", BASE_PATH);
+    fn url(&self, path: &str) -> String {
+        format!("{}/{}", BASE_PATH, path)
+    }
+
+    pub async fn login(&self, auth: &Auth) -> Result<(), ReqError> {
+        let url = self.url("login.cgi");
         let email = auth.email.clone();
         let passwd = auth.passwd.clone();
 
@@ -27,21 +40,32 @@ impl ApiClient {
             .text("auto", "1")
             .text("rm", "certify");
 
-        let req = self.client.post(url).multipart(form).build().unwrap();
+        let req = self.client.post(&url).multipart(form).build().unwrap();
 
-        let res = self
-            .client
-            .execute(req)
-            .await
-            .map_err(|e| format!("Failed to send request: {}", e))?;
+        let res = self.client.execute(req).await.map_err(|e| ReqError {
+            msg: e.to_string(),
+            status: None,
+            url: Some(url.to_string()),
+            res: None,
+        })?;
 
         if res.status().is_success() {
             if let Some("result=invalid") = res.url().query() {
-                return Err("Invalid email or password".to_string());
-            }
+                return Err(ReqError {
+                    msg: "Invalid email or password".to_string(),
+                    status: Some(StatusCode::UNAUTHORIZED),
+                    url: None,
+                    res: None,
+                });
+            };
             Ok(())
         } else {
-            Err(format!("Failed to login: {}", res.status()))
+            Err(ReqError {
+                msg: "Failed to login".to_string(),
+                status: Some(res.status()),
+                url: Some(url.to_string()),
+                res: Some(res),
+            })
         }
     }
 }

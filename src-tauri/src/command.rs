@@ -1,7 +1,14 @@
-use crate::api::ApiClient;
+use crate::api::{ApiClient, ReqError};
 use crate::settings;
 use std::sync::Mutex;
 use tauri::State;
+
+fn output<T>(res: Result<T, ReqError>) -> Result<T, String> {
+    match res {
+        Ok(data) => Ok(data),
+        Err(e) => Err(e.msg),
+    }
+}
 
 #[tauri::command]
 pub async fn login(
@@ -19,5 +26,5 @@ pub async fn login(
     }
 
     // Try to login with the new auth
-    api.login(&new_auth).await
+    output(api.login(&new_auth).await)
 }

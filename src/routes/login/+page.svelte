@@ -15,7 +15,8 @@
         loading = true;
         const user = { email, passwd };
         try {
-            await setAuth(user);
+            const res = await setAuth(user);
+            console.log(res);
             goto('/');
         } catch (err) {
             console.log(err);

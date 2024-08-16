@@ -1,4 +1,4 @@
-use crate::api::{ApiClient, ReqError};
+use crate::api::{ApiClient, ReqError, UserInfo};
 use crate::settings;
 use std::sync::Mutex;
 use tauri::State;
@@ -16,7 +16,7 @@ pub async fn login(
     api: State<'_, ApiClient>,
     managed_auth: State<'_, Mutex<settings::Auth>>,
     new_auth: settings::Auth,
-) -> Result<(), String> {
+) -> Result<UserInfo, String> {
     {
         let mut auth = managed_auth.lock().unwrap();
 
@@ -26,5 +26,6 @@ pub async fn login(
     }
 
     // Try to login with the new auth
-    output(api.login(&new_auth).await)
+    output(api.login(&new_auth).await)?;
+    output(api.get_user_info().await)
 }

@@ -1,4 +1,4 @@
-use crate::api::{ApiClient, ReqError, UserInfo};
+use crate::api::{ApiClient, ReqError, StopWatch, UserInfo};
 use crate::settings;
 use std::sync::Mutex;
 use tauri::State;
@@ -16,7 +16,7 @@ pub async fn login(
     api: State<'_, ApiClient>,
     managed_auth: State<'_, Mutex<settings::Auth>>,
     new_auth: settings::Auth,
-) -> Result<UserInfo, String> {
+) -> Result<(), String> {
     {
         let mut auth = managed_auth.lock().unwrap();
 
@@ -26,6 +26,22 @@ pub async fn login(
     }
 
     // Try to login with the new auth
-    output(api.login(&new_auth).await)?;
-    output(api.get_user_info().await)
+    output(api.login(&new_auth).await)
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct InitialData {
+    user_info: UserInfo,
+    stop_watch: StopWatch,
+}
+
+#[tauri::command]
+pub async fn init_data(api: State<'_, ApiClient>) -> Result<InitialData, String> {
+    let user_info = output(api.get_user_info().await)?;
+    let stop_watch = output(api.get_stop_watch().await)?;
+
+    Ok(InitialData {
+        user_info,
+        stop_watch,
+    })
 }

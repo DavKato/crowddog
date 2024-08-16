@@ -1,26 +1,48 @@
 <script>
     import { goto } from '$app/navigation';
     import { fade } from 'svelte/transition';
-    import { setAuth } from '$lib/io';
+    import { setAuth, initData } from '$lib/io';
     import Eye from '$lib/icons/Eye.svelte';
     import Loader from '$lib/icons/Loader.svelte';
+    import { onMount } from 'svelte';
 
+    let { data } = $props();
+
+    let isLoggedIn = $state(data.isLoggedIn);
     let loading = $state(false);
     let email = $state('');
     let passwd = $state('');
     let showPasswd = $state(false);
+    let loadingMsg = $derived(
+        isLoggedIn ? 'Login successful. Initializing data...' : 'Logging in...',
+    );
     let isFilled = $derived(email && passwd);
 
-    async function submit() {
+    onMount(() => {
+        if (data.isLoggedIn) submit();
+    });
+
+    async function login() {
         loading = true;
-        const user = { email, passwd };
+        await setAuth({ email, passwd });
+        isLoggedIn = true;
+    }
+
+    async function init() {
+        loading = true;
+        const res = await initData();
+        console.log(res);
+        await goto('/');
+    }
+
+    async function submit() {
         try {
-            const res = await setAuth(user);
-            console.log(res);
-            goto('/');
+            if (!isLoggedIn) await login();
+            await init();
         } catch (err) {
             console.log(err);
             loading = false;
+            isLoggedIn = false;
         }
     }
 </script>
@@ -40,7 +62,12 @@
 </fieldset>
 
 {#if loading}
-    <div class="cover"><Loader></Loader></div>
+    <div transition:fade class="cover">
+        {#key loadingMsg}
+            <p in:fade>{loadingMsg}</p>
+        {/key}
+        <Loader></Loader>
+    </div>
 {/if}
 
 <style>
@@ -133,9 +160,14 @@
         height: 100vh;
         background: rgba(0, 0, 0, 0.5);
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 1rem;
         font-size: 2rem;
         color: var(--color-text);
+    }
+    .cover p {
+        font-size: 1rem;
     }
 </style>

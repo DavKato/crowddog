@@ -13,22 +13,36 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             let handle = app.handle();
+            let client = api::ApiClient::new();
+            app.manage(client);
+
             let auth = settings::Auth::init(&handle);
 
-            if !auth.is_valid() {
-                // Redirect to the login page if the user auth are unset
-                let main_window = app.get_window("main").unwrap();
-                let url = main_window.url().to_string();
-                main_window
-                    .eval(&format!("window.location.replace('{}')", url + "login"))
-                    .expect("Unable to set window location");
+            let mut is_logged_in = false;
+            if auth.is_valid() {
+                // Try to login with the saved auth
+                if let Ok(()) =
+                    tauri::async_runtime::block_on(app.state::<api::ApiClient>().login(&auth))
+                {
+                    is_logged_in = true;
+                }
             }
+            let main_window = app.get_window("main").unwrap();
+            let mut url = main_window.url();
+            url.set_path("/login");
+            if is_logged_in {
+                url.set_query(Some("logged_in=true"));
+            }
+            println!("Redirecting to: {}", url.as_str());
+            main_window
+                .eval(&format!("window.location.replace('{}')", url.as_str()))
+                .expect("Unable to set window location");
 
             app.manage(Mutex::new(auth));
-            app.manage(api::ApiClient::new());
+
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![command::login])
+        .invoke_handler(tauri::generate_handler![command::login, command::init_data])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

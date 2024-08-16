@@ -32,6 +32,36 @@ pub struct UserInfo {
     name: String,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+struct Project {
+    id: u32,
+    name: String,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+struct Process {
+    id: u32,
+    name: String,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+struct WorkContent {
+    project: Option<Project>,
+    process: Option<Process>,
+}
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+pub struct StopWatch {
+    id: u32,
+    start_at: String,
+    status: String,
+    work_content: WorkContent,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct StopWatchResponse {
+    stop_watches: Vec<StopWatch>,
+}
+
 pub struct ApiClient {
     client: reqwest::Client,
 }
@@ -133,5 +163,27 @@ impl ApiClient {
             email: v.user_info.email,
             name: format!("{} {}", v.user_info.family_name, v.user_info.first_name),
         })
+    }
+
+    pub async fn get_stop_watch(&self) -> Result<StopWatch, ReqError> {
+        let url = self.url("apis/my/stop_watches");
+        let errmsg = "Failed to get stop watches";
+        let res = self.get(&url, errmsg).await?;
+        let text = &res.text().await.map_err(|e| ReqError {
+            msg: e.to_string(),
+            status: None,
+            url: Some(url),
+            res: None,
+        })?;
+        println!("{}", text);
+
+        let v: StopWatchResponse = serde_json::from_str(text).map_err(|e| ReqError {
+            msg: e.to_string(),
+            status: None,
+            url: None,
+            res: None,
+        })?;
+
+        Ok(v.stop_watches[0].clone())
     }
 }

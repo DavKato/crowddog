@@ -8,6 +8,7 @@ use tauri::Manager;
 mod api;
 mod command;
 mod settings;
+mod utils;
 
 fn main() {
     tauri::Builder::default()

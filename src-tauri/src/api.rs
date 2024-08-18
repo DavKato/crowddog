@@ -1,6 +1,7 @@
 const BASE_PATH: &str = "https://app.crowdlog.jp";
 
 use crate::settings::Auth;
+use crate::utils::today;
 use reqwest::{multipart, StatusCode};
 
 // custom error type
@@ -9,7 +10,7 @@ pub struct ReqError {
     pub msg: String,
     pub status: Option<StatusCode>,
     pub url: Option<String>,
-    pub res: Option<reqwest::Response>,
+    pub res: Option<String>,
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -27,25 +28,25 @@ struct ServerUserInfo {
 
 #[derive(Debug, serde::Serialize)]
 pub struct UserInfo {
-    user_id: u32,
-    email: String,
-    name: String,
+    pub user_id: u32,
+    pub email: String,
+    pub name: String,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-struct Project {
+pub struct Project {
     id: u32,
     name: String,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-struct Process {
+pub struct Process {
     id: u32,
     name: String,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-struct WorkContent {
+pub struct WorkContent {
     project: Option<Project>,
     process: Option<Process>,
 }
@@ -62,6 +63,20 @@ struct StopWatchResponse {
     stop_watches: Vec<StopWatch>,
 }
 
+#[derive(Debug, serde::Deserialize)]
+struct ProjectsResponse {
+    projects: Vec<Project>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct WorkContentHistory {
+    work_content: WorkContent,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct HistoryResponse {
+    work_content_histories: Vec<WorkContentHistory>,
+}
 pub struct ApiClient {
     client: reqwest::Client,
 }
@@ -93,7 +108,7 @@ impl ApiClient {
                 msg: msg.to_string(),
                 status: Some(res.status()),
                 url: Some(url.to_string()),
-                res: Some(res),
+                res: Some(res.text().await.unwrap()),
             });
             eprintln!("{:?}", err);
             err
@@ -135,7 +150,7 @@ impl ApiClient {
                 msg: "Failed to login".to_string(),
                 status: Some(res.status()),
                 url: Some(url.to_string()),
-                res: Some(res),
+                res: Some(res.text().await.unwrap()),
             })
         }
     }
@@ -175,7 +190,6 @@ impl ApiClient {
             url: Some(url),
             res: None,
         })?;
-        println!("{}", text);
 
         let v: StopWatchResponse = serde_json::from_str(text).map_err(|e| ReqError {
             msg: e.to_string(),
@@ -185,5 +199,53 @@ impl ApiClient {
         })?;
 
         Ok(v.stop_watches[0].clone())
+    }
+
+    pub async fn get_history(&self) -> Result<Vec<WorkContent>, ReqError> {
+        let url = self.url(format!("apis/my/histories/work_contents?date={}", today()).as_str());
+        let errmsg = "Failed to get history";
+        let res = self.get(&url, errmsg).await?;
+        let text = &res.text().await.map_err(|e| ReqError {
+            msg: e.to_string(),
+            status: None,
+            url: Some(url),
+            res: None,
+        })?;
+
+        let v: HistoryResponse = serde_json::from_str(text).map_err(|e| ReqError {
+            msg: e.to_string(),
+            status: None,
+            url: None,
+            res: None,
+        })?;
+
+        let flattened = v
+            .work_content_histories
+            .iter()
+            .map(|x| x.work_content.clone())
+            .collect::<Vec<WorkContent>>();
+
+        Ok(flattened)
+    }
+
+    pub async fn get_projects(&self, user_id: u32) -> Result<Vec<Project>, ReqError> {
+        let url = self.url(format!("apis/users/{}/projects?date={}", user_id, today()).as_str());
+        let errmsg = "Failed to get projects";
+        let res = self.get(&url, errmsg).await?;
+        let text = &res.text().await.map_err(|e| ReqError {
+            msg: e.to_string(),
+            status: None,
+            url: Some(url),
+            res: None,
+        })?;
+
+        let v: ProjectsResponse = serde_json::from_str(text).map_err(|e| ReqError {
+            msg: e.to_string(),
+            status: None,
+            url: None,
+            res: None,
+        })?;
+
+        Ok(v.projects)
     }
 }

@@ -1,4 +1,4 @@
-use crate::api::{ApiClient, ReqError, StopWatch, UserInfo};
+use crate::api::{ApiClient, Project, ReqError, StopWatch, UserInfo, WorkContent};
 use crate::settings;
 use std::sync::Mutex;
 use tauri::State;
@@ -33,15 +33,21 @@ pub async fn login(
 pub struct InitialData {
     user_info: UserInfo,
     stop_watch: StopWatch,
+    history: Vec<WorkContent>,
+    projects: Vec<Project>,
 }
 
 #[tauri::command]
 pub async fn init_data(api: State<'_, ApiClient>) -> Result<InitialData, String> {
     let user_info = output(api.get_user_info().await)?;
     let stop_watch = output(api.get_stop_watch().await)?;
+    let history = output(api.get_history().await)?;
+    let projects = output(api.get_projects(user_info.user_id).await)?;
 
     Ok(InitialData {
         user_info,
         stop_watch,
+        history,
+        projects,
     })
 }

@@ -6,6 +6,10 @@ export const store = {
 		return state;
 	},
 
+	try_get_state() {
+		return state;
+	},
+
 	init(d: State) {
 		state = d;
 	},

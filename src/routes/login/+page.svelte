@@ -2,8 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import { login as _login, init_data } from '$lib/io';
-	import Eye from '$lib/icons/Eye.svelte';
-	import Loader from '$lib/icons/Loader.svelte';
+	import { Eye, Loader } from '$lib/icons';
 	import { onMount } from 'svelte';
 	import { store } from '$lib/store.svelte';
 
@@ -48,19 +47,25 @@
 	}
 </script>
 
-<fieldset inert={loading}>
-	<legend>CrowdLogの認証情報を<wbr />入力してください。</legend>
-	<label>
-		<span>EMAIL</span>
-		<input autofocus type="text" bind:value={email} />
-	</label>
-	<label style="position: relative">
-		<span>PASSWORD</span>
-		<input type={show_passwd ? 'text' : 'password'} bind:value={passwd} />
-		<Eye class="pw-icon" hidden={!show_passwd} onclick={() => (show_passwd = !show_passwd)} />
-	</label>
-	<button disabled={!is_filled} onclick={submit}>OK</button>
-</fieldset>
+<div class="container">
+	<fieldset inert={loading}>
+		<legend>Input credentials for CrowdLog.</legend>
+		<label>
+			<span>EMAIL</span>
+			<input autofocus type="text" bind:value={email} />
+		</label>
+		<label style="position: relative">
+			<span>PASSWORD</span>
+			<input type={show_passwd ? 'text' : 'password'} bind:value={passwd} />
+			<Eye
+				class="pw-icon"
+				hidden={!show_passwd}
+				onclick={() => (show_passwd = !show_passwd)}
+			/>
+		</label>
+		<button disabled={!is_filled} onclick={submit}>OK</button>
+	</fieldset>
+</div>
 
 {#if loading}
 	<div transition:fade class="cover">
@@ -72,6 +77,11 @@
 {/if}
 
 <style>
+	.container {
+		display: grid;
+		height: 100%;
+		place-items: center;
+	}
 	fieldset {
 		height: min(19rem, 100svh);
 		width: min(26rem, 100%);
@@ -112,7 +122,7 @@
 	}
 	label input {
 		width: 100%;
-		padding: 0.5rem 1.8rem 0.3rem 1rem;
+		padding: 0.5rem 1.8rem 0.3rem 0.4rem;
 		border-bottom: 1px solid var(--color-text);
 	}
 	label :global(.pw-icon) {

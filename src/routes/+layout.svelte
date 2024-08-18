@@ -1,12 +1,38 @@
 <script>
 	import '../assets/reset.css';
+	import { page } from '$app/stores';
+	import { store } from '$lib/store.svelte';
+	import { Logout, ExternalLink } from '$lib/icons';
+	import { goto } from '$app/navigation';
+
 	let { children } = $props();
+	let is_login_page = $derived($page.url.pathname === '/login');
+	let email = $derived(store.try_get_state()?.user.email ?? '');
+
+	function logout() {
+		// TODO:
+		goto('/login');
+	}
 </script>
 
 <main>
+	<header>
+		{#if !is_login_page}
+			<span aria-hidden="true"></span>
+			<span>{email}</span>
+			<button title="logout" onclick={logout}><Logout></Logout></button>
+		{/if}
+	</header>
 	<div class="container">
 		{@render children()}
 	</div>
+
+	<footer>
+		<a href="https://app.crowdlog.jp/login.cgi" target="_blank">
+			<span>CrowdLog</span>
+			<span class="icon"><ExternalLink></ExternalLink></span>
+		</a>
+	</footer>
 </main>
 
 <style>
@@ -15,28 +41,75 @@
 		--color-secondary: #ff0080;
 		--color-tertiary: #79ff97;
 		--color-text: #fff;
+		--color-text-dark: #ccc;
 		--color-bg: #333;
+		--color-bg-dark: #202020;
 		--color-shadow: #fc0;
 	}
 	:global(html) {
 		font-family: 'Noto Sans JP', sans-serif;
-		font-size: clamp(0.8rem, 4vw + 0.1rem, 1.2rem);
+		font-size: clamp(0.8rem, 3.8vw + 0.1rem, 1.2rem);
 		color: var(--color-text);
 		background-color: var(--color-bg);
 	}
 
 	main {
 		height: 100svh;
-		max-width: 900px;
-		margin: 0 auto;
-		padding: 0 1rem;
+		overflow: hidden;
 
 		display: grid;
-		grid-template-rows: 1fr auto 2fr;
+		grid-template-rows: 2rem 1fr minmax(auto, 1.4rem);
 		grid-template-columns: 1fr minmax(0, 900px) 1fr;
-		grid-template-areas: '. . .' '. content .' '. . .';
+		grid-template-areas: 'header header header' '. content .' 'footer footer footer';
+
+		--bdw: 1rem;
+		border-right: var(--bdw) solid var(--color-bg-dark);
+		border-left: var(--bdw) solid var(--color-bg-dark);
+	}
+	header {
+		grid-area: header;
+		width: 100%;
+		height: 100%;
+		font-size: 0.7rem;
+
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+
+		background-color: var(--color-bg-dark);
+	}
+	header > button {
+		margin: 0 1rem;
+		height: 100%;
+		aspect-ratio: 1;
+		font-size: 1rem;
+		text-align: center;
+		cursor: pointer;
 	}
 	.container {
 		grid-area: content;
+	}
+
+	footer {
+		grid-area: footer;
+		width: 100%;
+		height: 100%;
+		padding: 0 0.5rem;
+		font-size: 0.7rem;
+
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+
+		background-color: var(--color-bg-dark);
+		color: var(--color-text-dark);
+	}
+	footer a {
+		display: flex;
+		align-items: center;
+	}
+	footer .icon {
+		font-size: 1rem;
+		line-height: 1;
 	}
 </style>

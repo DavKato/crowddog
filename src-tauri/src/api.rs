@@ -1,6 +1,6 @@
 const BASE_PATH: &str = "https://app.crowdlog.jp";
 
-use crate::settings::Auth;
+use crate::settings::Credentials;
 use crate::utils::today;
 use reqwest::{multipart, StatusCode};
 
@@ -15,11 +15,11 @@ pub struct ReqError {
 
 #[derive(Debug, serde::Deserialize)]
 struct PageHeader {
-    user_info: ServerUserInfo,
+    user_info: ServerUser,
 }
 
 #[derive(Debug, serde::Deserialize)]
-struct ServerUserInfo {
+struct ServerUser {
     user_id: u32,
     email: String,
     first_name: String,
@@ -27,8 +27,8 @@ struct ServerUserInfo {
 }
 
 #[derive(Debug, serde::Serialize)]
-pub struct UserInfo {
-    pub user_id: u32,
+pub struct User {
+    pub id: u32,
     pub email: String,
     pub name: String,
 }
@@ -115,10 +115,10 @@ impl ApiClient {
         }
     }
 
-    pub async fn login(&self, auth: &Auth) -> Result<(), ReqError> {
+    pub async fn login(&self, cred: &Credentials) -> Result<(), ReqError> {
         let url = self.url("login.cgi");
-        let email = auth.email.clone();
-        let passwd = auth.passwd.clone();
+        let email = cred.email.clone();
+        let passwd = cred.passwd.clone();
 
         let form = multipart::Form::new()
             .text("email", email)
@@ -155,7 +155,7 @@ impl ApiClient {
         }
     }
 
-    pub async fn get_user_info(&self) -> Result<UserInfo, ReqError> {
+    pub async fn get_user(&self) -> Result<User, ReqError> {
         let url = self.url("data/page-header");
         let errmsg = "Failed to get user info";
         let res = self.get(&url, errmsg).await?;
@@ -173,8 +173,8 @@ impl ApiClient {
             res: None,
         })?;
 
-        Ok(UserInfo {
-            user_id: v.user_info.user_id,
+        Ok(User {
+            id: v.user_info.user_id,
             email: v.user_info.email,
             name: format!("{} {}", v.user_info.family_name, v.user_info.first_name),
         })

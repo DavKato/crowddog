@@ -1,4 +1,6 @@
 <script>
+	import { store } from '$lib/store.svelte';
+	console.log({ store });
 </script>
 
 <h1>PAGE</h1>

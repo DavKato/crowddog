@@ -1,11 +1,9 @@
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from '@tauri-apps/api/tauri';
 
-export const setAuth = (user: User) => {
-    return invoke('login', { newAuth: user });
-}
+export const login = (credentials: Credentials) => {
+	return invoke('login', { credentials });
+};
 
-export const initData = (): Promise<Data> => {
-    return invoke('init_data');
-}
-
-type Data = Record<string, any>;
+export const init_data = (): Promise<State> => {
+	return invoke('init_data');
+};

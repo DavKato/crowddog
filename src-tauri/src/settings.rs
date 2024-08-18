@@ -8,11 +8,11 @@ fn get_file_path(app: &tauri::AppHandle) -> PathBuf {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Auth {
+pub struct Credentials {
     pub email: String,
     pub passwd: String,
 }
-impl Auth {
+impl Credentials {
     pub fn new() -> Self {
         Self {
             email: String::new(),
@@ -20,11 +20,11 @@ impl Auth {
         }
     }
 
-    pub fn init(app: &tauri::AppHandle) -> Auth {
+    pub fn init(app: &tauri::AppHandle) -> Credentials {
         let file_path = get_file_path(app);
 
         match restore_from_file(&file_path) {
-            Ok(auth) => auth,
+            Ok(cred) => cred,
             Err(e) => {
                 println!("{}, path: {:#?}", e, file_path);
                 Self::new()
@@ -32,7 +32,7 @@ impl Auth {
         }
     }
 
-    pub fn replace(&mut self, new_settings: &Auth) {
+    pub fn replace(&mut self, new_settings: &Credentials) {
         self.email = new_settings.email.clone();
         self.passwd = new_settings.passwd.clone();
     }
@@ -47,7 +47,7 @@ impl Auth {
     }
 }
 
-fn write_file(path: &PathBuf, data: &Auth) {
+fn write_file(path: &PathBuf, data: &Credentials) {
     let dir = Path::new(&path).parent().unwrap();
     if !dir.exists() {
         fs::create_dir_all(dir).unwrap();
@@ -56,8 +56,8 @@ fn write_file(path: &PathBuf, data: &Auth) {
     fs::write(path, data).expect("Unable to write file");
 }
 
-fn restore_from_file(path: &PathBuf) -> Result<Auth, io::Error> {
+fn restore_from_file(path: &PathBuf) -> Result<Credentials, io::Error> {
     let json = fs::read_to_string(path)?;
-    let auth: Auth = serde_json::from_str(&json)?;
-    Ok(auth)
+    let cred: Credentials = serde_json::from_str(&json)?;
+    Ok(cred)
 }

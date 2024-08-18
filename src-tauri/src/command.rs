@@ -1,4 +1,4 @@
-use crate::api::{ApiClient, Project, ReqError, StopWatch, UserInfo, WorkContent};
+use crate::api::{ApiClient, Project, ReqError, StopWatch, User, WorkContent};
 use crate::settings;
 use std::sync::Mutex;
 use tauri::State;
@@ -14,24 +14,24 @@ fn output<T>(res: Result<T, ReqError>) -> Result<T, String> {
 pub async fn login(
     app_handle: tauri::AppHandle,
     api: State<'_, ApiClient>,
-    managed_auth: State<'_, Mutex<settings::Auth>>,
-    new_auth: settings::Auth,
+    managed_cred: State<'_, Mutex<settings::Credentials>>,
+    credentials: settings::Credentials,
 ) -> Result<(), String> {
     {
-        let mut auth = managed_auth.lock().unwrap();
+        let mut cred = managed_cred.lock().unwrap();
 
-        // Save the new auth
-        auth.replace(&new_auth);
-        auth.save(&app_handle);
+        // Save the new cred
+        cred.replace(&credentials);
+        cred.save(&app_handle);
     }
 
-    // Try to login with the new auth
-    output(api.login(&new_auth).await)
+    // Try to login with the new cred
+    output(api.login(&credentials).await)
 }
 
 #[derive(Debug, serde::Serialize)]
 pub struct InitialData {
-    user_info: UserInfo,
+    user: User,
     stop_watch: StopWatch,
     history: Vec<WorkContent>,
     projects: Vec<Project>,
@@ -39,13 +39,13 @@ pub struct InitialData {
 
 #[tauri::command]
 pub async fn init_data(api: State<'_, ApiClient>) -> Result<InitialData, String> {
-    let user_info = output(api.get_user_info().await)?;
+    let user = output(api.get_user().await)?;
     let stop_watch = output(api.get_stop_watch().await)?;
     let history = output(api.get_history().await)?;
-    let projects = output(api.get_projects(user_info.user_id).await)?;
+    let projects = output(api.get_projects(user.id).await)?;
 
     Ok(InitialData {
-        user_info,
+        user,
         stop_watch,
         history,
         projects,

@@ -17,13 +17,13 @@ fn main() {
             let client = api::ApiClient::new();
             app.manage(client);
 
-            let auth = settings::Auth::init(&handle);
+            let cred = settings::Credentials::init(&handle);
 
             let mut is_logged_in = false;
-            if auth.is_valid() {
-                // Try to login with the saved auth
+            if cred.is_valid() {
+                // Try to login with the saved cred
                 if let Ok(()) =
-                    tauri::async_runtime::block_on(app.state::<api::ApiClient>().login(&auth))
+                    tauri::async_runtime::block_on(app.state::<api::ApiClient>().login(&cred))
                 {
                     is_logged_in = true;
                 }
@@ -39,7 +39,7 @@ fn main() {
                 .eval(&format!("window.location.replace('{}')", url.as_str()))
                 .expect("Unable to set window location");
 
-            app.manage(Mutex::new(auth));
+            app.manage(Mutex::new(cred));
 
             Ok(())
         })

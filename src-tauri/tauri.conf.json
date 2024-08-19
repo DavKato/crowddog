@@ -33,7 +33,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.oliancho.carciofi",
+      "identifier": "com.oliancho.crowddog",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -60,10 +60,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 900,
-        "resizable": true,
-        "title": "carciofi",
-        "width": 1200
+        "height": 460,
+        "resizable": false,
+        "title": "CrowdDog",
+        "width": 320
       }
     ]
   }

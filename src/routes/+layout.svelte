@@ -48,7 +48,7 @@
 	}
 	:global(html) {
 		font-family: 'Noto Sans JP', sans-serif;
-		font-size: clamp(0.8rem, 3.8vw + 0.1rem, 1.2rem);
+		font-size: clamp(0.8rem, 4vw + 0.1rem, 1.2rem);
 		color: var(--color-text);
 		background-color: var(--color-bg);
 	}
@@ -58,7 +58,7 @@
 		overflow: hidden;
 
 		display: grid;
-		grid-template-rows: 2rem 1fr minmax(auto, 1.4rem);
+		grid-template-rows: 1.8rem 1fr minmax(auto, 1.4rem);
 		grid-template-columns: 1fr minmax(0, 900px) 1fr;
 		grid-template-areas: 'header header header' '. content .' 'footer footer footer';
 
@@ -70,7 +70,7 @@
 		grid-area: header;
 		width: 100%;
 		height: 100%;
-		font-size: 0.7rem;
+		font-size: 0.8rem;
 
 		display: flex;
 		align-items: center;
@@ -79,11 +79,11 @@
 		background-color: var(--color-bg-dark);
 	}
 	header > button {
-		margin: 0 1rem;
 		height: 100%;
 		aspect-ratio: 1;
-		font-size: 1rem;
-		text-align: center;
+		display: grid;
+		place-items: center;
+		font-size: 1.1rem;
 		cursor: pointer;
 	}
 	.container {
@@ -94,8 +94,7 @@
 		grid-area: footer;
 		width: 100%;
 		height: 100%;
-		padding: 0 0.5rem;
-		font-size: 0.7rem;
+		font-size: 0.8rem;
 
 		display: flex;
 		align-items: center;
@@ -109,7 +108,7 @@
 		align-items: center;
 	}
 	footer .icon {
-		font-size: 1rem;
-		line-height: 1;
+		font-size: 1.1rem;
+		display: contents;
 	}
 </style>

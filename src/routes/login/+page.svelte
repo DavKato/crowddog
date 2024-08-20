@@ -1,8 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { fade } from 'svelte/transition';
-	import { login as _login, init_data } from '$lib/io';
-	import { Eye, Loader } from '$lib/icons';
+	import { login as _login, init_data } from '$lib/io.svelte';
+	import { Eye } from '$lib/icons';
 	import { onMount } from 'svelte';
 	import { store } from '$lib/store.svelte';
 
@@ -13,9 +12,6 @@
 	let email = $state('');
 	let passwd = $state('');
 	let show_passwd = $state(false);
-	let loading_msg = $derived(
-		is_logged_in ? 'Login successful. Initializing data...' : 'Logging in...',
-	);
 	let is_filled = $derived(email && passwd);
 
 	onMount(() => {
@@ -23,16 +19,17 @@
 	});
 
 	async function login() {
-		loading = true;
+		store.set_loading_msg('Logging in...');
 		await _login({ email, passwd });
 		is_logged_in = true;
 	}
 
 	async function init() {
-		loading = true;
+		store.set_loading_msg('Login successful. Initializing data...');
 		const res = await init_data();
 		store.init(res);
-		await goto('/');
+		goto('/');
+		store.clear_loading();
 	}
 
 	async function submit() {
@@ -66,15 +63,6 @@
 		<button disabled={!is_filled} onclick={submit}>OK</button>
 	</fieldset>
 </div>
-
-{#if loading}
-	<div transition:fade class="cover">
-		{#key loading_msg}
-			<p in:fade>{loading_msg}</p>
-		{/key}
-		<Loader></Loader>
-	</div>
-{/if}
 
 <style>
 	.container {
@@ -161,24 +149,5 @@
 		box-shadow:
 			1px 1px 1px var(--color-shadow),
 			inset 1px 1px 1px var(--color-shadow);
-	}
-
-	.cover {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100vw;
-		height: 100vh;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 1rem;
-		font-size: 2rem;
-		color: var(--color-text);
-	}
-	.cover p {
-		font-size: 1rem;
 	}
 </style>

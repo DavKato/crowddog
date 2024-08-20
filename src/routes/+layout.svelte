@@ -4,6 +4,7 @@
 	import { store } from '$lib/store.svelte';
 	import { Logout, ExternalLink } from '$lib/icons';
 	import { goto } from '$app/navigation';
+	import LoadingOverlay from './LoadingOverlay.svelte';
 
 	let { children } = $props();
 	let is_login_page = $derived($page.url.pathname === '/login');
@@ -15,7 +16,7 @@
 	}
 </script>
 
-<main>
+<div class="page">
 	<header>
 		{#if !is_login_page}
 			<span aria-hidden="true"></span>
@@ -23,9 +24,9 @@
 			<button title="logout" onclick={logout}><Logout></Logout></button>
 		{/if}
 	</header>
-	<div class="container">
+	<main>
 		{@render children()}
-	</div>
+	</main>
 
 	<footer>
 		<a href="https://app.crowdlog.jp/login.cgi" target="_blank">
@@ -33,11 +34,13 @@
 			<span class="icon"><ExternalLink></ExternalLink></span>
 		</a>
 	</footer>
-</main>
+
+	<LoadingOverlay></LoadingOverlay>
+</div>
 
 <style>
 	:global(:root) {
-		--color-primary: #0070f3;
+		--color-primary: #306cfe;
 		--color-secondary: #ff0080;
 		--color-tertiary: #79ff97;
 		--color-text: #fff;
@@ -53,7 +56,7 @@
 		background-color: var(--color-bg);
 	}
 
-	main {
+	.page {
 		height: 100svh;
 		overflow: hidden;
 
@@ -62,7 +65,7 @@
 		grid-template-columns: 1fr minmax(0, 900px) 1fr;
 		grid-template-areas: 'header header header' '. content .' 'footer footer footer';
 
-		--bdw: 1rem;
+		--bdw: 0.6rem;
 		border-right: var(--bdw) solid var(--color-bg-dark);
 		border-left: var(--bdw) solid var(--color-bg-dark);
 	}
@@ -86,7 +89,7 @@
 		font-size: 1.1rem;
 		cursor: pointer;
 	}
-	.container {
+	main {
 		grid-area: content;
 	}
 
@@ -106,6 +109,7 @@
 	footer a {
 		display: flex;
 		align-items: center;
+		user-select: none;
 	}
 	footer .icon {
 		font-size: 1.1rem;

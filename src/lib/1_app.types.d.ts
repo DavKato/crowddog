@@ -1,5 +1,3 @@
-type ValueOf<T> = T[keyof T];
-
 type Credentials = {
 	email: string;
 	passwd: string;

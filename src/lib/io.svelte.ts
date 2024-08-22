@@ -35,3 +35,11 @@ export const stop_timer = async (stop_watch: StopWatch) => {
 	store.setClock('00:00:00');
 	return sw;
 };
+
+export const cancel_timer = async (stop_watch: StopWatch) => {
+	unlisten();
+	const sw = await invoke<StopWatch>('cancel_timer', { stop_watch });
+	store.update_stop_watch(sw);
+	store.setClock('00:00:00');
+	return sw;
+};

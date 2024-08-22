@@ -7,10 +7,10 @@ use tauri::{Manager, State};
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn login(
+    credentials: settings::Credentials,
     app_handle: tauri::AppHandle,
     api: State<'_, ApiClient>,
     managed_cred: State<'_, Mutex<settings::Credentials>>,
-    credentials: settings::Credentials,
 ) -> Result<(), String> {
     {
         let mut cred = managed_cred.lock().unwrap();
@@ -64,9 +64,9 @@ impl ToClockStr for TimeDelta {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn start_timer(
+    stop_watch: StopWatch,
     app_handle: tauri::AppHandle,
     api: State<'_, ApiClient>,
-    stop_watch: StopWatch,
     timer_handle: State<'_, TimerHandle>,
 ) -> Result<StopWatch, String> {
     let sw = match stop_watch.status {
@@ -104,8 +104,8 @@ pub async fn start_timer(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn stop_timer(
-    api: State<'_, ApiClient>,
     stop_watch: StopWatch,
+    api: State<'_, ApiClient>,
     timer_handle: State<'_, TimerHandle>,
 ) -> Result<StopWatch, String> {
     api.stop_timer(stop_watch.id).await?;
@@ -115,7 +115,21 @@ pub async fn stop_timer(
     let mut t_handle = timer_handle.lock().unwrap();
     if let Some(handle) = t_handle.take() {
         handle.cancel();
-        println!("Timer stopped: {:#?}", t_handle);
+    }
+    Ok(sw)
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn cancel_timer(
+    stop_watch: StopWatch,
+    api: State<'_, ApiClient>,
+    timer_handle: State<'_, TimerHandle>,
+) -> Result<StopWatch, String> {
+    let sw = api.reset_timer(stop_watch.id).await?;
+
+    let mut t_handle = timer_handle.lock().unwrap();
+    if let Some(handle) = t_handle.take() {
+        handle.cancel();
     }
     Ok(sw)
 }

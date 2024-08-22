@@ -41,7 +41,7 @@
 <style>
 	:global(:root) {
 		--color-primary: #306cfe;
-		--color-secondary: #ff0080;
+		--color-danger: #ff0080;
 		--color-tertiary: #79ff97;
 		--color-text: #fff;
 		--color-text-dark: #ccc;

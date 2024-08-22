@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { store, TIMER_STATUS } from '$lib/store.svelte';
-	import { start_timer, stop_timer } from '$lib/io.svelte';
+	import { start_timer, stop_timer, cancel_timer } from '$lib/io.svelte';
 	import { goto } from '$app/navigation';
 	import StopWatch from './StopWatch.svelte';
 
@@ -12,7 +12,7 @@
 		if (needApplication) goto('/need_application');
 	});
 
-	const on_time_clicked = async () => {
+	const on_timer_clicked = async () => {
 		store.set_loading_msg('');
 		try {
 			state.stop_watch.status === TIMER_STATUS.STOPPED
@@ -22,10 +22,18 @@
 			store.clear_loading();
 		}
 	};
+	const on_cancel_clicked = async () => {
+		store.set_loading_msg('');
+		try {
+			await cancel_timer(state.stop_watch);
+		} finally {
+			store.clear_loading();
+		}
+	};
 </script>
 
 <div class="contents">
-	<StopWatch stop_watch={state.stop_watch} onmousedown={on_time_clicked}></StopWatch>
+	<StopWatch stop_watch={state.stop_watch} {on_timer_clicked} {on_cancel_clicked}></StopWatch>
 </div>
 
 <style>

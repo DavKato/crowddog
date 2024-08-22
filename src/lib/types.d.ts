@@ -1,3 +1,5 @@
+type ValueOf<T> = T[keyof T];
+
 type Credentials = {
 	email: string;
 	passwd: string;
@@ -9,7 +11,7 @@ type User = {
 	name: string;
 };
 
-type StopWatchStatus = 'reset' | 'timing';
+type StopWatchStatus = ValueOf<typeof import('./store.svelte').TIMER_STATUS>;
 type StopWatch = {
 	id: number;
 	start_at: string;

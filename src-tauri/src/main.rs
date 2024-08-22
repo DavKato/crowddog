@@ -34,16 +34,21 @@ fn main() {
             if is_logged_in {
                 url.set_query(Some("logged_in=true"));
             }
-            println!("Redirecting to: {}", url.as_str());
             main_window
                 .eval(&format!("window.location.replace('{}')", url.as_str()))
                 .expect("Unable to set window location");
 
             app.manage(Mutex::new(cred));
+            app.manage::<command::TimerHandle>(Mutex::new(None));
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![command::login, command::init_data])
+        .invoke_handler(tauri::generate_handler![
+            command::login,
+            command::init_data,
+            command::start_timer,
+            command::stop_timer,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

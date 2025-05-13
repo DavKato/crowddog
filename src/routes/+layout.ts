@@ -1,4 +1,5 @@
 export const ssr = false;
+export const prerender = false;
 
 import { store } from '$lib/store.svelte';
 import { redirect } from '@sveltejs/kit';

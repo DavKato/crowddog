@@ -14,26 +14,27 @@ type StopWatch = {
 	id: number;
 	start_at: string;
 	status: StopWatchStatus;
+	work_content: WorkContent;
 };
 
 type Project = {
 	id: number;
 	name: string;
 };
-
 type Process = {
 	id: number;
 	name: string;
 };
-
 type WorkContent = {
-	project: Project;
-	process: Process;
+	project?: Project;
+	process?: Process;
 };
+
+type DefinedWorkContent = Required<WorkContent>;
 
 type State = {
 	user: User;
 	stop_watch: StopWatch;
 	projects: Project[];
-	history: WorkContent[];
+	history: DefinedWorkContent[];
 };

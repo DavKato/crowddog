@@ -55,6 +55,5 @@
 		color: var(--color-text);
 		border: none;
 		border-radius: 5px;
-		cursor: pointer;
 	}
 </style>

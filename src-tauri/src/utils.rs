@@ -1,3 +1,4 @@
+use crate::api::ReqError;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -5,12 +6,12 @@ pub fn today() -> String {
     chrono::Local::now().format("%Y-%m-%d").to_string()
 }
 
-pub fn log_if_error<T, E: core::fmt::Debug>(res: Result<T, E>) -> Result<T, String> {
+pub fn log_if_error<T>(res: Result<T, reqwest::Error>) -> Result<T, ReqError> {
     match res {
         Ok(data) => Ok(data),
         Err(e) => {
             eprintln!("{:?}", e);
-            Err(format!("{:?}", e))
+            Err(ReqError::from(&e))
         }
     }
 }

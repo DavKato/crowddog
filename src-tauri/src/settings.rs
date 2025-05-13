@@ -4,10 +4,13 @@ use std::{fs, io};
 
 fn get_file_path(app: &tauri::AppHandle) -> PathBuf {
     let dir = app.path_resolver().app_config_dir().unwrap();
+    println!("{}", dir.display());
     dir.join("settings.json")
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+// TODO: At least encrypt the password and decrypt it back when reading.
+// TODO: upgrade to tauri v2 and implement the system tray.
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Credentials {
     pub email: String,
     pub passwd: String,

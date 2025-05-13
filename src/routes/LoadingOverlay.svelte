@@ -5,7 +5,7 @@
 </script>
 
 {#if store.is_loading}
-	<div transition:fade class="cover">
+	<div transition:fade={{ duration: 100 }} class="cover">
 		{#key store.loading_msg}
 			<p in:fade>{store.loading_msg}</p>
 		{/key}

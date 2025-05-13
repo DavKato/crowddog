@@ -1,0 +1,38 @@
+@layer base {
+	:root {
+		--color-primary: #306cfe;
+		--color-danger: #ff0080;
+		--color-tertiary: #79ff97;
+		--color-text: #fff;
+		--color-text-dark: #ccc;
+		--color-bg: rgb(63, 63, 63);
+		--color-bg-dark: rgb(37, 37, 37);
+		--color-shadow: #fc0;
+	}
+	html {
+		font-family: 'Noto Sans JP', sans-serif;
+		font-size: clamp(0.8rem, 4vw + 0.1rem, 1.2rem);
+		color: var(--color-text);
+		background-color: var(--color-bg-dark);
+	}
+
+	*:focus {
+		outline: none;
+	}
+	*:not(input):not(.no_focus_ring):focus-visible {
+		outline: 2px solid currentColor;
+	}
+	.ring_inset {
+		outline-offset: -2px;
+	}
+
+	.sr_only {
+		clip: rect(0 0 0 0);
+		clip-path: inset(100%);
+		height: 1px;
+		overflow: hidden;
+		position: absolute;
+		white-space: nowrap;
+		width: 1px;
+	}
+}

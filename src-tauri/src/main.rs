@@ -45,7 +45,11 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             command::login,
+            command::re_login,
             command::init_data,
+            command::get_my_patterns,
+            command::get_processes,
+            command::set_work_content,
             command::start_timer,
             command::stop_timer,
             command::cancel_timer,

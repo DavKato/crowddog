@@ -1,4 +1,6 @@
-use crate::api::{ApiClient, Project, StopWatch, StopWatchStatus, User, WorkContent};
+use crate::api::{
+    ApiClient, Process, Project, ReqError, StopWatch, StopWatchStatus, User, WorkContent,
+};
 use crate::settings;
 use crate::utils::{cancellation_token, Canceller};
 use chrono::{NaiveDateTime, TimeDelta, Utc};
@@ -11,7 +13,10 @@ pub async fn login(
     app_handle: tauri::AppHandle,
     api: State<'_, ApiClient>,
     managed_cred: State<'_, Mutex<settings::Credentials>>,
-) -> Result<(), String> {
+) -> Result<(), ReqError> {
+    // Try to login with the new cred
+    api.login(&credentials).await?;
+
     {
         let mut cred = managed_cred.lock().unwrap();
 
@@ -20,8 +25,17 @@ pub async fn login(
         cred.save(&app_handle);
     }
 
-    // Try to login with the new cred
-    api.login(&credentials).await
+    Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn re_login(
+    api: State<'_, ApiClient>,
+    managed_cred: State<'_, Mutex<settings::Credentials>>,
+) -> Result<(), ReqError> {
+    let cred = managed_cred.lock().unwrap().clone();
+    api.login(&cred).await?;
+    Ok(())
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -33,7 +47,7 @@ pub struct InitialData {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn init_data(api: State<'_, ApiClient>) -> Result<InitialData, String> {
+pub async fn init_data(api: State<'_, ApiClient>) -> Result<InitialData, ReqError> {
     let user = api.get_user().await?;
     let stop_watch = api.get_stop_watch().await?;
     let history = api.get_history().await?;
@@ -45,6 +59,33 @@ pub async fn init_data(api: State<'_, ApiClient>) -> Result<InitialData, String>
         history,
         projects,
     })
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn get_my_patterns(api: State<'_, ApiClient>) -> Result<Vec<WorkContent>, ReqError> {
+    api.get_my_patterns().await
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn get_processes(
+    user_id: u32,
+    project_id: u32,
+    api: State<'_, ApiClient>,
+) -> Result<Vec<Process>, ReqError> {
+    api.get_processes(user_id, project_id).await
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn set_work_content(
+    stop_watch: StopWatch,
+    project_id: u32,
+    process_id: u32,
+    api: State<'_, ApiClient>,
+) -> Result<WorkContent, ReqError> {
+    api.add_work_content_to_history(project_id, process_id)
+        .await?;
+    api.set_work_content(stop_watch.id, project_id, process_id)
+        .await
 }
 
 pub type TimerHandle = Mutex<Option<Canceller>>;
@@ -68,11 +109,15 @@ pub async fn start_timer(
     app_handle: tauri::AppHandle,
     api: State<'_, ApiClient>,
     timer_handle: State<'_, TimerHandle>,
-) -> Result<StopWatch, String> {
+) -> Result<StopWatch, ReqError> {
     let sw = match stop_watch.status {
         StopWatchStatus::Started => stop_watch,
-        StopWatchStatus::NeedToApply => return Err("Timer is stopped without applying a work content. Fix it in the stop watch page in the CrowdLog's website.".to_string()),
         StopWatchStatus::Clean => api.start_timer(stop_watch.id).await?,
+        StopWatchStatus::NeedToApply => return Err(ReqError {
+            status: reqwest::StatusCode::BAD_REQUEST.as_u16(),
+            message: String::from("Timer is stopped without applying a work content. Fix it in the stop watch page in the CrowdLog's website."),
+            source: None,
+        }),
     };
 
     let mut t_handle = timer_handle.lock().unwrap();
@@ -107,7 +152,7 @@ pub async fn stop_timer(
     stop_watch: StopWatch,
     api: State<'_, ApiClient>,
     timer_handle: State<'_, TimerHandle>,
-) -> Result<StopWatch, String> {
+) -> Result<StopWatch, ReqError> {
     api.stop_timer(stop_watch.id).await?;
     api.apply_timer(stop_watch.id).await?;
     let sw = api.reset_timer(stop_watch.id).await?;
@@ -124,7 +169,7 @@ pub async fn cancel_timer(
     stop_watch: StopWatch,
     api: State<'_, ApiClient>,
     timer_handle: State<'_, TimerHandle>,
-) -> Result<StopWatch, String> {
+) -> Result<StopWatch, ReqError> {
     let sw = api.reset_timer(stop_watch.id).await?;
 
     let mut t_handle = timer_handle.lock().unwrap();

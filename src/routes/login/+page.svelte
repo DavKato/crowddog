@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { login as _login, init_data } from '$lib/io.svelte';
 	import { Eye } from '$lib/icons';
@@ -8,18 +8,19 @@
 	let { data } = $props();
 
 	let is_logged_in = $state(data.is_logged_in);
-	let loading = $state(false);
 	let email = $state('');
 	let passwd = $state('');
 	let show_passwd = $state(false);
 	let is_filled = $derived(email && passwd);
+	let error_message = $state('');
 
 	onMount(() => {
 		if (data.is_logged_in) submit();
 	});
 
 	async function login() {
-		store.set_loading_msg('Logging in...');
+		store.set_loading_msg('');
+		error_message = '';
 		await _login({ email, passwd });
 		is_logged_in = true;
 	}
@@ -28,7 +29,7 @@
 		store.set_loading_msg('Login successful. Initializing data...');
 		const res = await init_data();
 		store.init(res);
-		goto('/');
+		goto('/', { replaceState: true });
 		store.clear_loading();
 	}
 
@@ -36,17 +37,21 @@
 		try {
 			if (!is_logged_in) await login();
 			await init();
-		} catch (err) {
-			console.log(err);
-			loading = false;
+		} catch (e) {
+			console.log(e);
 			is_logged_in = false;
+
+			const err = e as App.Error;
+			if (err.status !== 400) throw err;
+			error_message = err.message;
+			store.clear_loading();
 		}
 	}
 </script>
 
 <div class="container">
-	<fieldset inert={loading}>
-		<legend>Input credentials for CrowdLog.</legend>
+	<fieldset inert={store.is_loading}>
+		<legend>Input your credentials for CrowdLog.</legend>
 		<label>
 			<span>EMAIL</span>
 			<input autofocus type="text" bind:value={email} />
@@ -61,16 +66,19 @@
 			/>
 		</label>
 		<button disabled={!is_filled} onclick={submit}>OK</button>
+
+		<p class="error">{error_message}</p>
 	</fieldset>
 </div>
 
 <style>
 	.container {
-		display: grid;
 		height: 100%;
+		display: grid;
 		place-items: center;
 	}
 	fieldset {
+		position: relative;
 		height: min(19rem, 100svh);
 		width: min(26rem, 100%);
 		margin: 0 auto;
@@ -130,7 +138,6 @@
 		transition:
 			box-shadow 0.15s,
 			border-color 0.15s;
-		cursor: pointer;
 		user-select: none;
 	}
 	button:disabled {
@@ -149,5 +156,14 @@
 		box-shadow:
 			1px 1px 1px var(--color-shadow),
 			inset 1px 1px 1px var(--color-shadow);
+	}
+
+	.error {
+		position: absolute;
+		top: 90%;
+		left: 0%;
+		width: 100%;
+		text-align: center;
+		color: var(--color-danger);
 	}
 </style>

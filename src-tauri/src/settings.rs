@@ -1,3 +1,4 @@
+use crate::utils;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::{fs, io};
@@ -7,7 +8,6 @@ fn get_file_path(app: &tauri::AppHandle) -> PathBuf {
     dir.join("settings.json")
 }
 
-// TODO: At least encrypt the password and decrypt it back when reading.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Credentials {
     pub email: String,
@@ -40,7 +40,8 @@ impl Credentials {
 
     pub fn save(&self, app: &tauri::AppHandle) {
         let file_path = get_file_path(app);
-        write_file(&file_path, self);
+        let data = encrypt(self);
+        write_file(&file_path, &data);
     }
 
     pub fn clear(&mut self, app: &tauri::AppHandle) {
@@ -56,6 +57,20 @@ impl Credentials {
     }
 }
 
+fn encrypt(data: &Credentials) -> Credentials {
+    Credentials {
+        email: String::from(data.email.as_str()),
+        passwd: utils::encrypt(data.passwd.as_str()),
+    }
+}
+
+fn decrypt(data: &Credentials) -> Credentials {
+    Credentials {
+        email: String::from(data.email.as_str()),
+        passwd: utils::decrypt(data.passwd.as_str()),
+    }
+}
+
 fn write_file(path: &PathBuf, data: &Credentials) {
     let dir = Path::new(&path).parent().unwrap();
     if !dir.exists() {
@@ -68,5 +83,5 @@ fn write_file(path: &PathBuf, data: &Credentials) {
 fn restore_from_file(path: &PathBuf) -> Result<Credentials, io::Error> {
     let json = fs::read_to_string(path)?;
     let cred: Credentials = serde_json::from_str(&json)?;
-    Ok(cred)
+    Ok(decrypt(&cred))
 }

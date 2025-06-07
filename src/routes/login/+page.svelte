@@ -38,7 +38,7 @@
 			if (!is_logged_in) await login();
 			await init();
 		} catch (e) {
-			console.log(e);
+			console.error(e);
 			is_logged_in = false;
 
 			const err = e as App.Error;

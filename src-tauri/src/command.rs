@@ -38,6 +38,16 @@ pub async fn re_login(
     Ok(())
 }
 
+#[tauri::command(rename_all = "snake_case")]
+pub async fn clear_data(
+    app_handle: tauri::AppHandle,
+    managed_cred: State<'_, Mutex<settings::Credentials>>,
+) -> Result<(), ReqError> {
+    let mut cred = managed_cred.lock().unwrap().clone();
+    cred.clear(&app_handle);
+    Ok(())
+}
+
 #[derive(Debug, serde::Serialize)]
 pub struct InitialData {
     user: User,

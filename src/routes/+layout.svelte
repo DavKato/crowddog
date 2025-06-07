@@ -6,15 +6,17 @@
 	import { Logout, ExternalLink } from '$lib/icons';
 	import { goto } from '$app/navigation';
 	import LoadingOverlay from './LoadingOverlay.svelte';
+	import { clear_data } from '$lib/io.svelte';
 
 	let { children } = $props();
 	let is_login_page = $derived(page.url.pathname === '/login');
 	let email = $derived(store.try_get_state()?.user.email ?? '');
 
-	function logout() {
-		// TODO: actually logout and clear data.
+	const logout = async () => {
+		await clear_data();
+		store.clear();
 		goto('/login');
-	}
+	};
 </script>
 
 <div class="page">

@@ -37,6 +37,10 @@ export const init_data = async () => {
 	};
 };
 
+export const clear_data = () => {
+	return command('clear_data');
+};
+
 let my_patterns: Array<DefinedWorkContent> | undefined;
 export const get_my_patterns = async () => {
 	if (!my_patterns) {
@@ -94,7 +98,6 @@ export const cancel_timer = async (stop_watch: StopWatch) => {
 const deserialize_sw = (sw: StopWatch): StopWatch => {
 	if (!is_valid_project(sw.work_content.project)) sw.work_content.project = undefined;
 	if (!is_valid_project(sw.work_content.process)) sw.work_content.process = undefined;
-	console.log({ sw });
 	return sw;
 };
 

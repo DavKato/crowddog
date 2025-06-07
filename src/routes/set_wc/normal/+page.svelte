@@ -9,7 +9,6 @@
 
 	const onselect = async (pj: Project) => {
 		store.set_loading_msg('');
-		console.log(page.url.pathname + `/${pj.id}`);
 		await goto(page.url.pathname + `/${pj.id}`);
 		store.clear_loading();
 	};

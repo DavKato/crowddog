@@ -107,16 +107,6 @@ impl ApiClient {
                 Err(ReqError::from(&err))
             }
         }
-        // if response.status().is_success() {
-        //     Ok(())
-        // } else {
-        //     let url = response.url().clone();
-        //     {
-        //         eprintln!("failed to fetch: {:#?}", &response);
-        //     }
-        //     eprintln!("message: {:#?}", response.text().await.unwrap());
-        //     Err(ReqError::new(response))
-        // }
     }
 
     async fn adapt_json<T: serde::de::DeserializeOwned>(
@@ -135,16 +125,6 @@ impl ApiClient {
                 Err(ReqError::from(&err))
             }
         }
-
-        // if response.status().is_success() {
-        // } else {
-        //     let url = response.url().clone();
-        //     {
-        //         eprintln!("failed to fetch: {:#?}", &response);
-        //     }
-        //     eprintln!("message: {:#?}", response.text().await.unwrap());
-        //     Err(format!("failed to fetch: {}", url))
-        // }
     }
 
     pub async fn login(&self, cred: &Credentials) -> Result<(), ReqError> {

@@ -4,12 +4,10 @@ use std::{fs, io};
 
 fn get_file_path(app: &tauri::AppHandle) -> PathBuf {
     let dir = app.path_resolver().app_config_dir().unwrap();
-    println!("{}", dir.display());
     dir.join("settings.json")
 }
 
 // TODO: At least encrypt the password and decrypt it back when reading.
-// TODO: upgrade to tauri v2 and implement the system tray.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Credentials {
     pub email: String,
@@ -29,7 +27,7 @@ impl Credentials {
         match restore_from_file(&file_path) {
             Ok(cred) => cred,
             Err(e) => {
-                println!("{}, path: {:#?}", e, file_path);
+                eprintln!("{}, path: {:#?}", e, file_path);
                 Self::new()
             }
         }
@@ -43,6 +41,14 @@ impl Credentials {
     pub fn save(&self, app: &tauri::AppHandle) {
         let file_path = get_file_path(app);
         write_file(&file_path, self);
+    }
+
+    pub fn clear(&mut self, app: &tauri::AppHandle) {
+        let file_path = get_file_path(app);
+        let dir = Path::new(&file_path).parent().unwrap();
+        fs::remove_dir_all(dir).unwrap();
+
+        *self = Self::new();
     }
 
     pub fn is_valid(&self) -> bool {

@@ -1,38 +1,35 @@
-# create-svelte
+# Crowdlog Stopwatch Desktop App
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+This is a desktop app for the [Crowdlog](https://crowdlog.io/) stopwatch feature, built with [Tauri](https://tauri.app/) and [SvelteKit](https://svelte.dev).
+The original feature in their web app is not very user-friendly, so this app aims to provide a better experience.
 
-## Creating a project
+_※This app is for personal use, and is not affiliated with Crowdlog in any way nor endorsed by them._
 
-If you're seeing this, you've probably already done this step. Congrats!
+# Features
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- Select a project and a process just like you do in their web app.
+- Start/stop/cancel the stopwatch.
+- Automatically login with your Crowdlog credentials when the app is started, and when the session ends on their side.
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+![screen image](dev_assets/screen.png)
 
-## Developing
+# How to Use
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+The app is not published and is not planned to be published.
+If you want to use it, you can pull this repo and build it yourself.
 
-```bash
-npm run dev
+The app stores your crowdlog credentials in a local file, so you can use it without logging in every time.
+The credentials are somewhat encrypted, but you should not use this app if you are an admin user and concerned about security.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## How to Build
 
-## Building
+- [Setup a Tauri v1 environment](https://v1.tauri.app/v1/guides/getting-started/prerequisites).
+- Run `pnpm install` in the root directory of this repo to install dependencies.
+- (You can try the app by running `pnpm dev`).
+- Run `pnpm build` to build the app. (Consult the [Tauri documentation](https://v1.tauri.app/v1/guides/building/) for more details on building).
 
-To create a production version of your app:
+# Possible Improvements (Not Planned)
 
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+- Implement a system tray icon to start/stop the stopwatch without opening the app.
+- Implement a way to select a project and a process from the system tray icon.
+- Add a setting to set the rounding mode of the stopwatch.
